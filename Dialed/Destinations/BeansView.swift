@@ -15,6 +15,7 @@ struct BeansView: View {
     }
 }
 
+
 #Preview {
-    BeansView()
+    ContentView()
 }

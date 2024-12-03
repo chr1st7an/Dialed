@@ -1,5 +1,5 @@
 //
-//  DialingView.swift
+//  BeanView.swift
 //  Dialed
 //
 //  Created by Christian Rodriguez on 12/2/24.
@@ -7,10 +7,10 @@
 
 import SwiftUI
 
-struct DialingView: View {
+struct BeanView: View {
     @EnvironmentObject var navigation : Navigation
     @Binding var selectedBeans: Beans?
-    @Binding var isDialing: Bool
+    @Binding var showBean: Bool
     @Binding var hideView: (Bool, Bool)
     
     var body: some View {
@@ -33,6 +33,14 @@ struct DialingView: View {
                                                     hideView.1 = true
                                                 }
                                             })
+                                    Text(selectedBeans.name)
+                                        .customFont(type: .regular, size: .button)
+                                        .foregroundStyle(.inverseText)
+                                        .multilineTextAlignment(.center)
+                                    Text(selectedBeans.roaster)
+                                        .customFont(type: .light, size: .subheader)
+                                        .foregroundStyle(.inverseText)
+                                        .multilineTextAlignment(.center)
                                 }
                                 
                                 
@@ -46,7 +54,7 @@ struct DialingView: View {
                                         /// Closing the View with animation
                                         hideView.0 = false
                                         hideView.1 = false
-                                        isDialing = false
+                                        showBean = false
                                         /// Average Navigation Pop takes 0.35s that's the reason I set the animation duration as 0.35s, after the view is popped out, making selectedProfile to nil
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
                                             self.selectedBeans = nil
