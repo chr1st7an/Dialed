@@ -8,7 +8,7 @@
 import SwiftUI
 import Foundation
 
-/// Sample Profile Model
+/// Sample Bean Model
 struct Beans: Identifiable {
     var id = UUID().uuidString
     var name: String

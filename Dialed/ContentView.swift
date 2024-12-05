@@ -16,17 +16,14 @@ struct ContentView: View {
     @State private var selectedBeans: Beans?
     
     @State private var isDialingIn: Bool = false
-    @State private var showBean: Bool = false
-    
     @State private var hideDialing: (Bool, Bool) = (false, false)
-    @State private var hideBean: (Bool, Bool) = (false, false)
 
     
     var body: some View {
         NavigationStack(path: $navigation.stack){
             ZStack{
                 Launch()
-                HomeView(selectedBeans: $selectedBeans, isDialingIn: $isDialingIn, showBean: $showBean)
+                HomeView(selectedBeans: $selectedBeans, isDialingIn: $isDialingIn)
                     .environmentObject(navigation)
                     .opacity(launch ? 1 : 0)
                     .animation(.interactiveSpring(duration: 6), value: launch)
@@ -46,9 +43,6 @@ struct ContentView: View {
                 case .dialing:
                     BeansView()
                 }
-            }
-            .navigationDestination(isPresented: $showBean) {
-                BeanView(selectedBeans: $selectedBeans, showBean: $isDialingIn, hideView: $hideBean)
             }
             .navigationDestination(isPresented: $isDialingIn) {
                 DialingView(selectedBeans: $selectedBeans, isDialing: $isDialingIn, hideView: $hideDialing)

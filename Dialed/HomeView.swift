@@ -12,7 +12,6 @@ struct HomeView: View {
 
     @Binding var selectedBeans : Beans?
     @Binding var isDialingIn: Bool
-    @Binding var showBean: Bool
     @State var animateDial: Bool = false
 
     @State var mostRecentBean: Beans = testBeans
@@ -73,8 +72,7 @@ struct HomeView: View {
     @ViewBuilder
     func Beans() -> some View {
         Button{
-            selectedBeans = mostRecentBean
-            showBean = true
+
         }label:{
             VStack(alignment:.leading, spacing:5){
                 HStack{
@@ -151,12 +149,11 @@ struct HomeView: View {
         }.onChange(of: animateDial) { newValue in
             if newValue {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    selectedBeans = testBeans
+                    selectedBeans = mostRecentBean
                     isDialingIn.toggle()
                 }
             }
         }
-
         .onChange(of: isDialingIn) { newValue in
             if !newValue {
                 animateDial = newValue

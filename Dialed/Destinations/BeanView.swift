@@ -33,14 +33,14 @@ struct BeanView: View {
                                                     hideView.1 = true
                                                 }
                                             })
-                                    Text(selectedBeans.name)
-                                        .customFont(type: .regular, size: .button)
-                                        .foregroundStyle(.inverseText)
-                                        .multilineTextAlignment(.center)
-                                    Text(selectedBeans.roaster)
-                                        .customFont(type: .light, size: .subheader)
-                                        .foregroundStyle(.inverseText)
-                                        .multilineTextAlignment(.center)
+//                                    Text(selectedBeans.name)
+//                                        .customFont(type: .regular, size: .button)
+//                                        .foregroundStyle(.inverseText)
+//                                        .multilineTextAlignment(.center)
+//                                    Text(selectedBeans.roaster)
+//                                        .customFont(type: .light, size: .subheader)
+//                                        .foregroundStyle(.inverseText)
+//                                        .multilineTextAlignment(.center)
                                 }
                                 
                                 
