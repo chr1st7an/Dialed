@@ -48,34 +48,37 @@ struct ImageView: View {
             Image("beans")
                 .resizable()
                 .frame(width: size.width > 60 ? 100 : size.width, height: size.width > 60 ? 100 : size.height)
-//            if size.width > 60 {
-//                Group{
-//                    Text(bean.name)
-//                        .customFont(type: .regular, size: .button)
-//                        .foregroundStyle(.inverseText)
-//                        .multilineTextAlignment(.center)
-//                    Text(bean.roaster)
-//                        .customFont(type: .light, size: .subheader)
-//                        .foregroundStyle(.inverseText)
-//                        .multilineTextAlignment(.center)
-//                }.opacity(0)
-//            }
-//            if size.width > 60 {
-//                Text("test").transition(.opacity)
-//            }
-//            Spacer()
-//        }
-//            .frame(width: size.width , height: size.height)
-//            / Linear Gradient at Bottom
-//            .overlay(content: {
-//                VStack(content: {
-//                    Text(bean.name)
-//                    Text(bean.roaster)
-//
-//                })
-//                .opacity(size.width > 60 ? 1 : 0)
-//            })
-//            .clipShape(.rect(cornerRadius: size.width > 60 ? 0 : 30))
+    }
+}
+
+struct PulsatingCirclesView: View {
+    @State private var animate = false
+    let size: CGFloat
+
+    var body: some View {
+        VStack {
+            ZStack {
+                Circle().fill(.primaryBackground.opacity(0.25))
+                    .frame(width: size * 1.4, height: size * 1.4)
+                    .scaleEffect(animate ? 1 : 0.85) // Adding scale effect for pulsating
+                
+                Circle().fill(.primaryBackground.opacity(0.35))
+                    .frame(width: size * 1.3, height: size * 1.3)
+                    .scaleEffect(animate ? 1 : 0.82) // Adding scale effect for pulsating
+
+                Circle().fill(.primaryBackground.opacity(0.45))
+                    .frame(width: size * 1.15, height: size * 1.15)
+                    .scaleEffect(animate ? 1 : 0.80) // Adding scale effect for pulsating
+
+                Circle().fill(.primaryBackground.opacity(0.75))
+                    .frame(width: size, height: size)
+                    .scaleEffect(animate ? 1 : 0.95) // Adding scale effect for pulsating
+            }
+            .onAppear {
+                animate.toggle()
+            }
+            .animation(Animation.easeInOut(duration: 1).repeatForever(autoreverses: true), value: animate)
+        }
     }
 }
 

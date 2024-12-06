@@ -18,7 +18,7 @@ class DialingViewModel: ObservableObject {
 
 enum DialingStep : Hashable {
     case dose
-    case time
+    case extraction
     case yield
     case tastingNotes
 }

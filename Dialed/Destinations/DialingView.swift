@@ -24,22 +24,6 @@ struct DialingView: View {
     @Namespace private var beanRoaster
     @Namespace private var beanIcon
     
-    @State private var dosePickerConfig: WheelPicker.Config = .init(
-        count: 50,
-        steps: 10,
-        spacing: 10,
-        multiplier: 1
-    )
-    @State private var dose: CGFloat = 18
-    @State private var yieldPickerConfig: WheelPicker.Config = .init(
-        count: 100,
-        steps: 10,
-        spacing: 10,
-        multiplier: 1
-    )
-    @State private var yield: CGFloat = 18
-
-    
     var body: some View {
         ZStack{
             LinearGradient(colors: animateGradient ? [.secondaryForeground, .secondaryForeground.opacity(0.7)] : [.secondaryForeground.opacity(0.7), .secondaryForeground], startPoint: .top, endPoint: animateGradient ? .bottom : . bottomTrailing).edgesIgnoringSafeArea(.all)
@@ -61,7 +45,7 @@ struct DialingView: View {
                                         switch dialingVm.step {
                                         case .dose:
                                             DoseInput(size: size, bean: selectedBeans).transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
-                                        case .time:
+                                        case .extraction:
                                             TimeInput(size: size, bean: selectedBeans).transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
                                         case .yield:
                                             YieldInput(size: size, bean: selectedBeans).transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
@@ -111,14 +95,14 @@ struct DialingView: View {
                                     HStack(alignment: .center, spacing: 20){
                                         // step icons
                                         Image("beans").resizable().frame(width: 20, height: 20).scaleEffect(dialingVm.step == .dose ? 1.7 : 1)
-                                        Image(systemName: "timer").resizable().frame(width: 20, height: 20).clipShape(Circle()).scaleEffect(dialingVm.step == .time ? 1.7 : 1).redacted(reason: dialingVm.step == .dose ? .placeholder : [])
+                                        Image(systemName: "timer").resizable().frame(width: 20, height: 20).clipShape(Circle()).scaleEffect(dialingVm.step == .extraction ? 1.7 : 1).redacted(reason: dialingVm.step == .dose ? .placeholder : [])
                                         Image(systemName: "cup.and.heat.waves.fill")
                                             .resizable()
                                             .frame(width: 20, height: 20)
-                                            .if(dialingVm.step == .dose || dialingVm.step == .time) { view in
+                                            .if(dialingVm.step == .dose || dialingVm.step == .extraction) { view in
                                                         view.clipShape(Circle())
                                                     }
-                                            .scaleEffect(dialingVm.step == .yield ? 1.7 : 1).redacted(reason: dialingVm.step == .dose || dialingVm.step == .time ? .placeholder : [])
+                                            .scaleEffect(dialingVm.step == .yield ? 1.7 : 1).redacted(reason: dialingVm.step == .dose || dialingVm.step == .extraction ? .placeholder : [])
                                         Image(systemName: "checklist.rtl").resizable().frame(width: 20, height: 20)
                                             .if(dialingVm.step != .tastingNotes) { view in
                                                         view.clipShape(Circle())
@@ -134,10 +118,10 @@ struct DialingView: View {
                                                     switch dialingVm.step {
                                                     case .dose:
                                                         dialingVm.step = .dose
-                                                    case .time:
+                                                    case .extraction:
                                                         dialingVm.step = .dose
                                                     case .yield:
-                                                        dialingVm.step = .time
+                                                        dialingVm.step = .extraction
                                                     case .tastingNotes:
                                                         dialingVm.step = .yield
                                                     }
@@ -152,8 +136,8 @@ struct DialingView: View {
                                             withAnimation{
                                                 switch dialingVm.step {
                                                 case .dose:
-                                                    dialingVm.step = .time
-                                                case .time:
+                                                    dialingVm.step = .extraction
+                                                case .extraction:
                                                     dialingVm.step = .yield
                                                 case .yield:
                                                     dialingVm.step = .tastingNotes
@@ -164,7 +148,11 @@ struct DialingView: View {
                                             Text("next →").customFont(type: .light, size: .body).foregroundStyle(.inverseText)
                                                 
                                             .foregroundStyle(.primaryText)
-                                        }.padding(.bottom)
+                                        }
+                                        .padding(.bottom)
+                                        .if(( dialingVm.step == .extraction && !finalizeExtraction)) { button in
+                                            button.disabled(true)
+                                        }
                                     }
                                 }.padding(.bottom, 10)
                             }
@@ -189,6 +177,15 @@ struct DialingView: View {
         }.navigationBarBackButtonHidden(true)
     }
     
+    // DOSE
+    @State private var dosePickerConfig: WheelPicker.Config = .init(
+        count: 50,
+        steps: 10,
+        spacing: 10,
+        multiplier: 1
+    )
+    @State private var dose: CGFloat = 18
+    
     @ViewBuilder
     func DoseInput(size: CGSize, bean: Beans) -> some View {
         VStack{
@@ -200,24 +197,106 @@ struct DialingView: View {
         }.safeAreaPadding(.top, 100)
     }
     
+    // EXTRACTION
+    @State var startTimer : Bool = false
+    @State var finalizeExtraction : Bool = false
+
+    @State private var extractionTime: CGFloat = 0
+    @State private var timer: Timer? = nil
+    
+    private func startExtraction() {
+            timer?.invalidate() // Stop any existing timer
+            timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+                extractionTime += 1
+            }
+        }
+        
+    private func stopExtraction() {
+            timer?.invalidate()
+            timer = nil
+        }
+    
+    @State private var extractionPickerConfig: WheelPicker.Config = .init(
+        count: 60,
+        steps: 10,
+        spacing: 10,
+        multiplier: 1
+    )
+    
     @ViewBuilder
     func TimeInput(size: CGSize, bean: Beans) -> some View {
         VStack{
-            Text("Record Extraction Time").customFont(type: .regular, size: .header).foregroundStyle(.inverseText.gradient).multilineTextAlignment(.center)
-//            collapsedBean(size: size, bean: bean)
-            Button{}label:{
-                Image(systemName: "play.circle.fill").resizable().scaledToFit().padding(100).foregroundStyle(.inverseText)
+            Text("Record Extraction Time").customFont(type: .regular, size: .header).foregroundStyle(.inverseText).multilineTextAlignment(.center)
+            VStack{
+                if startTimer {
+                    Text(verbatim: "\(extractionTime)")
+                        .customFont(type: .regular, size: .header)
+                        .foregroundStyle(.inverseText)
+                        .contentTransition(.numericText(value: dose))
+                        .animation(.snappy, value: extractionTime)
+                        .if(!finalizeExtraction){ view in
+                            view
+                                .background(PulsatingCirclesView(size: 200))
+
+                        }
+                        .padding(.top, 170)
+                }else{
+                    Button{
+                        withAnimation{
+                            startTimer.toggle()
+                            if startTimer {
+                                startExtraction()
+                            }
+                        }
+                    }label:{
+                        Image(systemName: "play.circle.fill")
+                            .resizable()
+                            .frame(width: 200, height: 200)
+                            .foregroundStyle(.primaryBackground)
+                            .padding(100)
+                    }
+                }
+                
+                if finalizeExtraction {
+                    Text("seconds").customFont(type: .light, size: .body)
+                    WheelPicker(config: extractionPickerConfig, value: $extractionTime).padding(.bottom, 100)
+                }
+                
+                if !finalizeExtraction{
+                    if startTimer || extractionTime >= 1{
+                        Button{
+                            withAnimation{
+                                finalizeExtraction.toggle()
+                                stopExtraction()
+                            }
+                        }label:{
+                            Text("complete")
+                                .customFont(type: .regular, size: .body)
+                                .foregroundStyle(.inverseText)
+                        }
+                        .padding(.vertical, 100)
+                    }
+                }
             }
+            
             Spacer()
             
         }.safeAreaPadding(.top, 100)
     }
     
+    // YIELD
+    @State private var yieldPickerConfig: WheelPicker.Config = .init(
+        count: 100,
+        steps: 10,
+        spacing: 10,
+        multiplier: 1
+    )
+    @State private var yield: CGFloat = 18
+    
     @ViewBuilder
     func YieldInput(size: CGSize, bean: Beans) -> some View {
         VStack{
             Text("Extraction Yield").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
-//            collapsedBean(size: size, bean: bean)
             YieldPicker().padding(.vertical)
             Spacer()
             
