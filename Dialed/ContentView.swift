@@ -11,8 +11,9 @@ import NavigationTransitions
 struct ContentView: View {
     @StateObject var navigation = Navigation()
 
+    @State private var animateGradient = true
     @State private var launch = true
-    
+
     @State private var selectedBeans: Beans?
     
     @State private var isDialingIn: Bool = false
@@ -42,6 +43,7 @@ struct ContentView: View {
                     BeansView()
                 case .dialing:
                     BeansView()
+                    
                 }
             }
             .navigationDestination(isPresented: $isDialingIn) {
@@ -58,9 +60,14 @@ struct ContentView: View {
     
     @ViewBuilder
     func Launch() -> some View {
-//        LinearGradient(colors: animateGradient ? [.primaryBackground, .primaryForeground] : [.primaryBackground, .secondaryForeground], startPoint: .top, endPoint: animateGradient ? .bottom : . bottomTrailing)
+        LinearGradient(colors: animateGradient ? [.primaryBackground, .primaryForeground] : [.primaryForeground, .primaryBackground], startPoint: .top, endPoint: animateGradient ? .bottom : . bottomTrailing).edgesIgnoringSafeArea(.all)
+            .onAppear {
+                            withAnimation(.easeInOut(duration: 10).repeatForever(autoreverses: true)) {
+                                animateGradient.toggle()
+                            }
+                        }
         
-        Color.primaryBackground.edgesIgnoringSafeArea(.all)
+//        Color.primaryBackground.edgesIgnoringSafeArea(.all)
         Text(timeOfDayGreeting()).customFont(type: .regular, size: .header)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: launch ? .topLeading : .center)
                     .animation(.interactiveSpring(duration: 2), value: launch)

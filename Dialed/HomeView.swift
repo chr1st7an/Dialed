@@ -110,23 +110,21 @@ struct HomeView: View {
                 }
                 .contentShape(.rect)
                 .padding()
-                .background(RoundedRectangle(cornerRadius: 10).foregroundStyle(.primaryForeground)).padding(.horizontal)
+                .background(RoundedRectangle(cornerRadius: 5).foregroundStyle(.primaryForeground)).padding(.horizontal)
 
                 
                 
-                HStack(spacing:5){
                     Button {
                         //
                     } label: {
-                        Image(systemName: "book.pages.fill").foregroundStyle(.inverseText.gradient).frame( maxHeight: UIScreen.main.bounds.height * 0.04, alignment: .center).padding(.horizontal).background(RoundedRectangle(cornerRadius: 10).foregroundStyle(.gray))
-                    }
-                    Button {
-                        //
-                    } label: {
-                        Image(systemName: "plus").foregroundStyle(.inverseText.gradient).frame(maxHeight: UIScreen.main.bounds.height * 0.04, alignment: .center).padding(.horizontal).background(RoundedRectangle(cornerRadius: 10).foregroundStyle(.secondaryForeground))
+                        HStack(spacing:5){
+                            Image(systemName: "plus").foregroundStyle(.inverseText.gradient).frame(maxHeight: UIScreen.main.bounds.height * 0.04, alignment: .center)
+                            Text("add new").customFont(type: .light, size: .caption).foregroundStyle(.inverseText)
+
+                        }.padding(.horizontal).background(RoundedRectangle(cornerRadius: 5).foregroundStyle(.secondaryForeground))
                     }
 
-                }.padding(.horizontal)
+                .padding(.horizontal)
             }
         }
 

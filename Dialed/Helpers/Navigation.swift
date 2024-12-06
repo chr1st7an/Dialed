@@ -18,4 +18,5 @@ enum Destination : Hashable {
     case profile
     case beans
     case dialing
+    
 }

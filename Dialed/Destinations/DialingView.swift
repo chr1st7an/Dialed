@@ -9,12 +9,15 @@ import SwiftUI
 
 struct DialingView: View {
     @EnvironmentObject var navigation : Navigation
+    @StateObject var dialingVm = DialingViewModel()
     @Binding var selectedBeans: Beans?
     @Binding var isDialing: Bool
     @Binding var hideView: (Bool, Bool)
     
     
     @State var start : Bool = false
+    @State var animateGradient = false
+
     @State private var isBeanSettled = false
     @Namespace private var beanAnimation
     @Namespace private var beanName
@@ -32,7 +35,12 @@ struct DialingView: View {
     
     var body: some View {
         ZStack{
-            Color.secondaryForeground.ignoresSafeArea()
+            LinearGradient(colors: animateGradient ? [.secondaryForeground, .secondaryForeground.opacity(0.7)] : [.secondaryForeground.opacity(0.7), .secondaryForeground], startPoint: .top, endPoint: animateGradient ? .bottom : . bottomTrailing).edgesIgnoringSafeArea(.all)
+                .onAppear {
+                                withAnimation(.easeInOut(duration: 10).repeatForever(autoreverses: true)) {
+                                    animateGradient.toggle()
+                                }
+                            }
             if let selectedBeans{
                 VStack {
                     GeometryReader(content: { geometry in
@@ -42,17 +50,18 @@ struct DialingView: View {
                             // transitionary animation is complete
                             if hideView.0 {
                                 if isBeanSettled {
-                                    VStack{
-                                        Text("Select Dose").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
-                                        collapsedBean(size: size, bean: selectedBeans)
-                                        DosePicker().padding(.vertical)
-                                        Spacer()
-                                        Button {
-                                            
-                                        }label: {
-                                            Text("continue").customFont(type: .regular, size: .button).foregroundStyle(.inverseText).padding(.horizontal, 50).padding(.vertical, 5).background(.primaryBackground.gradient).clipShape(Capsule())
-                                        }.padding(.bottom)
-                                    }.safeAreaPadding(.top, 100)
+                                    ZStack{
+                                        switch dialingVm.step {
+                                        case .dose:
+                                            DoseInput(size: size, bean: selectedBeans).transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
+                                        case .time:
+                                            TimeInput(size: size, bean: selectedBeans).transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
+                                        case .yield:
+                                            YieldInput(size: size, bean: selectedBeans).transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
+                                        case .tastingNotes:
+                                            TastingNotes(size: size, bean: selectedBeans).transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
+                                        }
+                                    }
                                 }
                                 else{
                                     expandedBean(size: size, bean: selectedBeans)
@@ -109,6 +118,74 @@ struct DialingView: View {
                 })
             }
         }.navigationBarBackButtonHidden(true)
+    }
+    
+    @ViewBuilder
+    func DoseInput(size: CGSize, bean: Beans) -> some View {
+        VStack{
+            Text("Select Dose").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
+            collapsedBean(size: size, bean: bean)
+            DosePicker().padding(.vertical)
+            Spacer()
+            Button {
+                withAnimation{
+                    dialingVm.step = .time
+                }
+            }label: {
+                Text("continue").customFont(type: .regular, size: .button).foregroundStyle(.primaryText).padding(.horizontal, 50).padding(.vertical, 5).background(.primaryBackground).clipShape(Capsule())
+            }.padding(.bottom)
+        }.safeAreaPadding(.top, 100)
+    }
+    
+    @ViewBuilder
+    func TimeInput(size: CGSize, bean: Beans) -> some View {
+        VStack{
+            Text("Record Time of Extraction").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
+//            collapsedBean(size: size, bean: bean)
+            DosePicker().padding(.vertical)
+            Spacer()
+            Button {
+                withAnimation{
+                    dialingVm.step = .yield
+                }
+            }label: {
+                Text("continue").customFont(type: .regular, size: .button).foregroundStyle(.primaryText).padding(.horizontal, 50).padding(.vertical, 5).background(.primaryBackground).clipShape(Capsule())
+            }.padding(.bottom)
+        }.safeAreaPadding(.top, 100)
+    }
+    
+    @ViewBuilder
+    func YieldInput(size: CGSize, bean: Beans) -> some View {
+        VStack{
+            Text("Extraction Yield").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
+//            collapsedBean(size: size, bean: bean)
+            DosePicker().padding(.vertical)
+            Spacer()
+            Button {
+                withAnimation{
+                    dialingVm.step = .tastingNotes
+                }
+            }label: {
+                Text("continue").customFont(type: .regular, size: .button).foregroundStyle(.primaryText).padding(.horizontal, 50).padding(.vertical, 5).background(.primaryBackground).clipShape(Capsule())
+            }.padding(.bottom)
+        }.safeAreaPadding(.top, 100)
+    }
+    
+    @ViewBuilder
+    func TastingNotes(size: CGSize, bean: Beans) -> some View {
+        VStack{
+            Text("Tasting Notes").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
+//            collapsedBean(size: size, bean: bean)
+            DosePicker().padding(.vertical)
+            Spacer()
+            Button {
+                withAnimation{
+                    dialingVm.step = .tastingNotes
+                }
+            }label: {
+                Text("continue").customFont(type: .regular, size: .button).foregroundStyle(.primaryText).padding(.horizontal, 50).padding(.vertical, 5).background(.primaryBackground).clipShape(Capsule())
+            }.padding(.bottom)
+        }.safeAreaPadding(.top, 100)
     }
     
     @ViewBuilder
@@ -175,7 +252,7 @@ struct DialingView: View {
                     }
 
                 }
-            }.padding().background(.primaryBackground.gradient).clipShape(RoundedRectangle(cornerRadius: 10))
+            }.padding().background(.primaryBackground).clipShape(RoundedRectangle(cornerRadius: 5))
             Button {
                 
             } label: {
