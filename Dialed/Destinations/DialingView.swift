@@ -25,19 +25,26 @@ struct DialingView: View {
     @Namespace private var beanIcon
     
     @State private var dosePickerConfig: WheelPicker.Config = .init(
-        count: 30,
+        count: 50,
         steps: 10,
         spacing: 10,
         multiplier: 1
     )
     @State private var dose: CGFloat = 18
+    @State private var yieldPickerConfig: WheelPicker.Config = .init(
+        count: 100,
+        steps: 10,
+        spacing: 10,
+        multiplier: 1
+    )
+    @State private var yield: CGFloat = 18
 
     
     var body: some View {
         ZStack{
             LinearGradient(colors: animateGradient ? [.secondaryForeground, .secondaryForeground.opacity(0.7)] : [.secondaryForeground.opacity(0.7), .secondaryForeground], startPoint: .top, endPoint: animateGradient ? .bottom : . bottomTrailing).edgesIgnoringSafeArea(.all)
                 .onAppear {
-                                withAnimation(.easeInOut(duration: 10).repeatForever(autoreverses: true)) {
+                                withAnimation(.easeInOut(duration: 5).repeatForever(autoreverses: true)) {
                                     animateGradient.toggle()
                                 }
                             }
@@ -99,6 +106,68 @@ struct DialingView: View {
                             }
                             .opacity(hideView.1 ? 1 : 0)
                             .animation(.snappy, value: hideView.1)
+                            .overlay(alignment: .bottom) {
+                                VStack(spacing: 20){
+                                    HStack(alignment: .center, spacing: 20){
+                                        // step icons
+                                        Image("beans").resizable().frame(width: 20, height: 20).scaleEffect(dialingVm.step == .dose ? 1.7 : 1)
+                                        Image(systemName: "timer").resizable().frame(width: 20, height: 20).clipShape(Circle()).scaleEffect(dialingVm.step == .time ? 1.7 : 1).redacted(reason: dialingVm.step == .dose ? .placeholder : [])
+                                        Image(systemName: "cup.and.heat.waves.fill")
+                                            .resizable()
+                                            .frame(width: 20, height: 20)
+                                            .if(dialingVm.step == .dose || dialingVm.step == .time) { view in
+                                                        view.clipShape(Circle())
+                                                    }
+                                            .scaleEffect(dialingVm.step == .yield ? 1.7 : 1).redacted(reason: dialingVm.step == .dose || dialingVm.step == .time ? .placeholder : [])
+                                        Image(systemName: "checklist.rtl").resizable().frame(width: 20, height: 20)
+                                            .if(dialingVm.step != .tastingNotes) { view in
+                                                        view.clipShape(Circle())
+                                                    }
+                                            .scaleEffect(dialingVm.step == .tastingNotes ? 1.7 : 1).redacted(reason: dialingVm.step  != .tastingNotes ? .placeholder : [])
+                                        
+
+                                    }
+                                    HStack(spacing:25){
+                                        if dialingVm.step != .dose{
+                                            Button {
+                                                withAnimation{
+                                                    switch dialingVm.step {
+                                                    case .dose:
+                                                        dialingVm.step = .dose
+                                                    case .time:
+                                                        dialingVm.step = .dose
+                                                    case .yield:
+                                                        dialingVm.step = .time
+                                                    case .tastingNotes:
+                                                        dialingVm.step = .yield
+                                                    }
+                                                }
+                                            }label: {
+                                                Text("← back").customFont(type: .light, size: .body).foregroundStyle(.primaryText)
+                                                    
+                                                .foregroundStyle(.primaryText)
+                                            }.padding(.bottom)
+                                        }
+                                        Button {
+                                            withAnimation{
+                                                switch dialingVm.step {
+                                                case .dose:
+                                                    dialingVm.step = .time
+                                                case .time:
+                                                    dialingVm.step = .yield
+                                                case .yield:
+                                                    dialingVm.step = .tastingNotes
+                                                case .tastingNotes:
+                                                    dialingVm.step = .dose
+                                                }                                            }
+                                        }label: {
+                                            Text("next →").customFont(type: .light, size: .body).foregroundStyle(.inverseText)
+                                                
+                                            .foregroundStyle(.primaryText)
+                                        }.padding(.bottom)
+                                    }
+                                }.padding(.bottom, 10)
+                            }
                         }
                         .anchorPreference(key: MAnchorKey.self, value: .bounds, transform: { anchor in
                             return [selectedBeans.id: anchor]
@@ -127,30 +196,20 @@ struct DialingView: View {
             collapsedBean(size: size, bean: bean)
             DosePicker().padding(.vertical)
             Spacer()
-            Button {
-                withAnimation{
-                    dialingVm.step = .time
-                }
-            }label: {
-                Text("continue").customFont(type: .regular, size: .button).foregroundStyle(.primaryText).padding(.horizontal, 50).padding(.vertical, 5).background(.primaryBackground).clipShape(Capsule())
-            }.padding(.bottom)
+            
         }.safeAreaPadding(.top, 100)
     }
     
     @ViewBuilder
     func TimeInput(size: CGSize, bean: Beans) -> some View {
         VStack{
-            Text("Record Time of Extraction").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
+            Text("Record Extraction Time").customFont(type: .regular, size: .header).foregroundStyle(.inverseText.gradient).multilineTextAlignment(.center)
 //            collapsedBean(size: size, bean: bean)
-            DosePicker().padding(.vertical)
+            Button{}label:{
+                Image(systemName: "play.circle.fill").resizable().scaledToFit().padding(100).foregroundStyle(.inverseText)
+            }
             Spacer()
-            Button {
-                withAnimation{
-                    dialingVm.step = .yield
-                }
-            }label: {
-                Text("continue").customFont(type: .regular, size: .button).foregroundStyle(.primaryText).padding(.horizontal, 50).padding(.vertical, 5).background(.primaryBackground).clipShape(Capsule())
-            }.padding(.bottom)
+            
         }.safeAreaPadding(.top, 100)
     }
     
@@ -159,15 +218,9 @@ struct DialingView: View {
         VStack{
             Text("Extraction Yield").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
 //            collapsedBean(size: size, bean: bean)
-            DosePicker().padding(.vertical)
+            YieldPicker().padding(.vertical)
             Spacer()
-            Button {
-                withAnimation{
-                    dialingVm.step = .tastingNotes
-                }
-            }label: {
-                Text("continue").customFont(type: .regular, size: .button).foregroundStyle(.primaryText).padding(.horizontal, 50).padding(.vertical, 5).background(.primaryBackground).clipShape(Capsule())
-            }.padding(.bottom)
+            
         }.safeAreaPadding(.top, 100)
     }
     
@@ -176,15 +229,7 @@ struct DialingView: View {
         VStack{
             Text("Tasting Notes").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
 //            collapsedBean(size: size, bean: bean)
-            DosePicker().padding(.vertical)
             Spacer()
-            Button {
-                withAnimation{
-                    dialingVm.step = .tastingNotes
-                }
-            }label: {
-                Text("continue").customFont(type: .regular, size: .button).foregroundStyle(.primaryText).padding(.horizontal, 50).padding(.vertical, 5).background(.primaryBackground).clipShape(Capsule())
-            }.padding(.bottom)
         }.safeAreaPadding(.top, 100)
     }
     
@@ -252,7 +297,7 @@ struct DialingView: View {
                     }
 
                 }
-            }.padding().background(.primaryBackground).clipShape(RoundedRectangle(cornerRadius: 5))
+            }.padding().background(.ultraThinMaterial).clipShape(RoundedRectangle(cornerRadius: 5))
             Button {
                 
             } label: {
@@ -280,6 +325,28 @@ struct DialingView: View {
             .padding(.bottom, 50)
             
             WheelPicker(config: dosePickerConfig, value: $dose)
+                .frame(height: 60)
+        }
+    }
+    
+    @ViewBuilder
+    func YieldPicker() -> some View {
+        VStack{
+            HStack(alignment: .lastTextBaseline, spacing: 5, content: {
+                Text(verbatim: "\(yield)")
+                    .customFont(type: .regular, size: .header)
+                    .foregroundStyle(.inverseText)
+                    .contentTransition(.numericText(value: dose))
+                    .animation(.snappy, value: dose)
+                
+                Text("grams")
+                    .customFont(type: .regular, size: .body)
+                    .foregroundStyle(.inverseText)
+            })
+            .padding(.vertical, 30)
+            .padding(.bottom, 50)
+            
+            WheelPicker(config: yieldPickerConfig, value: $yield)
                 .frame(height: 60)
         }
     }
