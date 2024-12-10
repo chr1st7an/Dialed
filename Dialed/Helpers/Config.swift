@@ -6,20 +6,24 @@
 //
 import SwiftUI
 
+extension Text {
+    func customFont(type: FontType, size: FontSize) -> Text {
+        return self.font(Font.custom(type.rawValue, fixedSize: size.rawValue))
+    }
+}
+
 enum FontType: String {
     case regular = "Parkinsans-Regular"
     case light = "Parkinsans-Light"
     case bold = "Parkinsans-Bold"
-
 }
+
 enum FontSize: CGFloat {
     case subheader = 22
     case header = 35
     case button = 30
     case body = 18
     case caption = 15
-
-
 }
 
 struct CircularTextView: View {
@@ -81,11 +85,7 @@ struct LetterWidthSize: View {
         }
     }
 }
-extension Text {
-    func customFont(type: FontType, size: FontSize) -> Text {
-        return self.font(Font.custom(type.rawValue, fixedSize: size.rawValue))
-    }
-}
+
 
 func timeOfDayGreeting() -> String {
     let calendar = Calendar.current
@@ -116,5 +116,15 @@ extension View {
         } else {
             self
         }
+    }
+}
+
+extension View {
+    func underlineTextField(color: Color) -> some View {
+        self
+            .padding(.vertical, 10)
+            .overlay(RoundedRectangle(cornerRadius: 25).frame(height: 2).padding(.top, 35))
+            .foregroundColor(color)
+            .padding(10)
     }
 }

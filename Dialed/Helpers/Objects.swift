@@ -14,18 +14,54 @@ struct Beans: Identifiable {
     var name: String
     var roaster: String
     var roastedOn: Date
+    var preground: Bool
 }
-
-var testBeans : Beans = .init(name: "Speed Dial", roaster: "Brooklyn Coffee Company", roastedOn: Date())
+var testBeans : Beans = .init(name: "Speed Dial", roaster: "Brooklyn Coffee Company", roastedOn: Date(), preground: false)
 
 struct EspressoShot: Identifiable {
     var id = UUID().uuidString
     var dose: Double
     var yield: Double
-    var time: Double
+    var extractionTime: Double
     var metric : String
-    var TastingNotes : [String]
+    var tastingNotes : TastingNotes
     var beans : Beans
+    var grind: GrindSetting
 }
+var espressoShotShell = EspressoShot(dose: 0, yield: 0, extractionTime: 0, metric: "grams", tastingNotes: tastingNotesShell, beans: testBeans, grind: grindSettingShell)
 
-var espressoShotShell = EspressoShot(dose: 0, yield: 0, time: 0, metric: "grams", TastingNotes: [], beans: testBeans)
+struct TastingNotes {
+    var acidity: Double
+    var bitterness: Double
+    var crema: Double
+    var satisfaction: Double
+}
+var tastingNotesShell = TastingNotes(acidity: 0.5, bitterness: 0.5, crema: 0.5, satisfaction: 0.5)
+
+struct Grinder: Identifiable {
+    var id = UUID().uuidString
+    var name : String
+    var type: GrindType
+    var sizeAdjustment: SizeAdjustment
+    var burrType: BurrType
+}
+var grinderTest = Grinder(name: "Fellow Opus", type: .automatic, sizeAdjustment: .stepped, burrType: .conical)
+struct GrindSetting: Identifiable {
+    var id = UUID().uuidString
+    var grinder : Grinder
+    var notes: String
+}
+var grindSettingShell = GrindSetting(grinder: .init(name: "", type: .automatic, sizeAdjustment: .stepped, burrType: .conical), notes: "")
+
+enum GrindType: String {
+    case hand = "Hand"
+    case automatic = "Automatic"
+}
+enum SizeAdjustment: String {
+    case stepless = "Stepless"
+    case stepped = "Stepped"
+}
+enum BurrType: String {
+    case flat = "Flat"
+    case conical = "Conical"
+}

@@ -12,7 +12,7 @@ struct ContentView: View {
     @StateObject var navigation = Navigation()
 
     @State private var animateGradient = true
-    @State private var launch = true
+    @State private var launch = false
 
     @State private var selectedBeans: Beans?
     
@@ -27,7 +27,8 @@ struct ContentView: View {
                 HomeView(selectedBeans: $selectedBeans, isDialingIn: $isDialingIn)
                     .environmentObject(navigation)
                     .opacity(launch ? 1 : 0)
-                    .animation(.interactiveSpring(duration: 6), value: launch)
+                    .animation(.interactiveSpring(
+                        duration: 6), value: launch)
                 ProgressView()
                     .opacity(launch ? 0 : 1)
                     .animation(.interactiveSpring(duration: 1), value: launch)

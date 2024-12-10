@@ -10,7 +10,7 @@ import SwiftUI
 struct WheelPicker: View {
     /// Config
     var config: Config
-    @Binding var value: CGFloat
+    @Binding var value: Double
     /// View Properties
     @State private var isLoaded: Bool = false
     var body: some View {

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		36202C8B2CFFB4E300B76DA7 /* NavigationTransitions in Frameworks */ = {isa = PBXBuildFile; productRef = 36202C8A2CFFB4E300B76DA7 /* NavigationTransitions */; };
+		368EC2772D074F5D006635AB /* Sliders in Frameworks */ = {isa = PBXBuildFile; productRef = 368EC2762D074F5D006635AB /* Sliders */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +71,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				36202C8B2CFFB4E300B76DA7 /* NavigationTransitions in Frameworks */,
+				368EC2772D074F5D006635AB /* Sliders in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -131,6 +133,7 @@
 			name = Dialed;
 			packageProductDependencies = (
 				36202C8A2CFFB4E300B76DA7 /* NavigationTransitions */,
+				368EC2762D074F5D006635AB /* Sliders */,
 			);
 			productName = Dialed;
 			productReference = 3697E7D72CEE9CA600908E9E /* Dialed.app */;
@@ -216,6 +219,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				36202C892CFFB4E300B76DA7 /* XCRemoteSwiftPackageReference "swiftui-navigation-transitions" */,
+				368EC2752D074DF5006635AB /* XCRemoteSwiftPackageReference "swiftui-sliders" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3697E7D82CEE9CA600908E9E /* Products */;
@@ -594,6 +598,14 @@
 				minimumVersion = 0.14.0;
 			};
 		};
+		368EC2752D074DF5006635AB /* XCRemoteSwiftPackageReference "swiftui-sliders" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/spacenation/swiftui-sliders.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -601,6 +613,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 36202C892CFFB4E300B76DA7 /* XCRemoteSwiftPackageReference "swiftui-navigation-transitions" */;
 			productName = NavigationTransitions;
+		};
+		368EC2762D074F5D006635AB /* Sliders */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 368EC2752D074DF5006635AB /* XCRemoteSwiftPackageReference "swiftui-sliders" */;
+			productName = Sliders;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
