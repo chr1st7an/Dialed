@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 struct HomeView: View {
     @EnvironmentObject var navigation : Navigation
@@ -71,9 +72,6 @@ struct HomeView: View {
     
     @ViewBuilder
     func Beans() -> some View {
-        Button{
-
-        }label:{
             VStack(alignment:.leading, spacing:5){
                 HStack{
                     Text("Beans").customFont(type: .bold, size: .subheader).foregroundStyle(.primaryText)
@@ -114,9 +112,7 @@ struct HomeView: View {
 
                 
                 
-                    Button {
-                        //
-                    } label: {
+                NavigationLink(value: Destination.newBeans) {
                         HStack(spacing:5){
                             Image(systemName: "plus").foregroundStyle(.inverseText.gradient).frame(maxHeight: UIScreen.main.bounds.height * 0.04, alignment: .center)
                             Text("add new").customFont(type: .light, size: .caption).foregroundStyle(.inverseText)
@@ -126,7 +122,7 @@ struct HomeView: View {
 
                 .padding(.horizontal)
             }
-        }
+        
 
     }
     

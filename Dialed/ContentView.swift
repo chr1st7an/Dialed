@@ -44,6 +44,8 @@ struct ContentView: View {
                     BeansView()
                 case .dialing:
                     BeansView()
+                case .newBeans:
+                    AddBeansView()
                     
                 }
             }
@@ -55,7 +57,7 @@ struct ContentView: View {
             LayerView(selectedBeans: selectedBeans, hideView: hideDialing, value: value, pushView: isDialingIn)
         })
         .navigationTransition(
-            .fade(.in).animation(.easeInOut(duration: 0.75))
+            .fade(.in).animation(.easeInOut(duration: 0.5))
         )
     }
     
@@ -66,7 +68,7 @@ struct ContentView: View {
                             withAnimation(.easeInOut(duration: 10).repeatForever(autoreverses: true)) {
                                 animateGradient.toggle()
                             }
-                        }
+            }.ignoresSafeArea()
         
 //        Color.primaryBackground.edgesIgnoringSafeArea(.all)
         Text(timeOfDayGreeting()).customFont(type: .regular, size: .header)

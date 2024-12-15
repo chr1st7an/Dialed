@@ -1,6 +1,24 @@
 {
-  "originHash" : "1d302b901e6221704c0b23f8e0fcdb4d1d184ae24319b950f384ecfdc123675c",
+  "originHash" : "f2e21df2ff19fd6392c9c6c968faf9f73f1f6e7959406842eb15b1a70207b4a1",
   "pins" : [
+    {
+      "identity" : "carbode-barcode-scanner-for-swiftui",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/heart/CarBode-Barcode-Scanner-For-SwiftUI.git",
+      "state" : {
+        "revision" : "d0192bd6ccc61e426eb7a301f16521f1da05dc66",
+        "version" : "2.2.4"
+      }
+    },
+    {
+      "identity" : "codescanner",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/twostraws/CodeScanner.git",
+      "state" : {
+        "revision" : "5e886430238944c7200fc9e10dbf2d9550dba865",
+        "version" : "2.5.2"
+      }
+    },
     {
       "identity" : "swiftui-introspect",
       "kind" : "remoteSourceControl",

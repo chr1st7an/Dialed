@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CarBode
 
 struct BeansView: View {
     @EnvironmentObject var navigation : Navigation

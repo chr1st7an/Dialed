@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		36202C8B2CFFB4E300B76DA7 /* NavigationTransitions in Frameworks */ = {isa = PBXBuildFile; productRef = 36202C8A2CFFB4E300B76DA7 /* NavigationTransitions */; };
 		368EC2772D074F5D006635AB /* Sliders in Frameworks */ = {isa = PBXBuildFile; productRef = 368EC2762D074F5D006635AB /* Sliders */; };
+		36A4E5C32D0BC3C4002C1681 /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; productRef = 36A4E5C22D0BC3C4002C1681 /* CodeScanner */; };
+		36A4E5C62D0C79EB002C1681 /* CarBode in Frameworks */ = {isa = PBXBuildFile; productRef = 36A4E5C52D0C79EB002C1681 /* CarBode */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +74,8 @@
 			files = (
 				36202C8B2CFFB4E300B76DA7 /* NavigationTransitions in Frameworks */,
 				368EC2772D074F5D006635AB /* Sliders in Frameworks */,
+				36A4E5C32D0BC3C4002C1681 /* CodeScanner in Frameworks */,
+				36A4E5C62D0C79EB002C1681 /* CarBode in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -134,6 +138,8 @@
 			packageProductDependencies = (
 				36202C8A2CFFB4E300B76DA7 /* NavigationTransitions */,
 				368EC2762D074F5D006635AB /* Sliders */,
+				36A4E5C22D0BC3C4002C1681 /* CodeScanner */,
+				36A4E5C52D0C79EB002C1681 /* CarBode */,
 			);
 			productName = Dialed;
 			productReference = 3697E7D72CEE9CA600908E9E /* Dialed.app */;
@@ -220,6 +226,8 @@
 			packageReferences = (
 				36202C892CFFB4E300B76DA7 /* XCRemoteSwiftPackageReference "swiftui-navigation-transitions" */,
 				368EC2752D074DF5006635AB /* XCRemoteSwiftPackageReference "swiftui-sliders" */,
+				36A4E5C12D0BC3C4002C1681 /* XCRemoteSwiftPackageReference "CodeScanner" */,
+				36A4E5C42D0C79EB002C1681 /* XCRemoteSwiftPackageReference "CarBode-Barcode-Scanner-For-SwiftUI" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3697E7D82CEE9CA600908E9E /* Products */;
@@ -606,6 +614,22 @@
 				minimumVersion = 2.1.0;
 			};
 		};
+		36A4E5C12D0BC3C4002C1681 /* XCRemoteSwiftPackageReference "CodeScanner" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/twostraws/CodeScanner.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.2;
+			};
+		};
+		36A4E5C42D0C79EB002C1681 /* XCRemoteSwiftPackageReference "CarBode-Barcode-Scanner-For-SwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/heart/CarBode-Barcode-Scanner-For-SwiftUI.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.2.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -618,6 +642,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 368EC2752D074DF5006635AB /* XCRemoteSwiftPackageReference "swiftui-sliders" */;
 			productName = Sliders;
+		};
+		36A4E5C22D0BC3C4002C1681 /* CodeScanner */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 36A4E5C12D0BC3C4002C1681 /* XCRemoteSwiftPackageReference "CodeScanner" */;
+			productName = CodeScanner;
+		};
+		36A4E5C52D0C79EB002C1681 /* CarBode */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 36A4E5C42D0C79EB002C1681 /* XCRemoteSwiftPackageReference "CarBode-Barcode-Scanner-For-SwiftUI" */;
+			productName = CarBode;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
