@@ -13,10 +13,40 @@ struct Beans: Identifiable {
     var id = UUID().uuidString
     var name: String
     var roaster: String
+    var roast: Roast
     var roastedOn: Date
     var preground: Bool
+    var advanced: BeansAdvanced
 }
-var testBeans : Beans = .init(name: "Speed Dial", roaster: "Brooklyn Coffee Company", roastedOn: Date(), preground: false)
+struct BeansAdvanced{
+    var origin: String
+    var process: Process
+    var altitude: Altitude
+    var varietal: Varietal
+    var notes: String
+}
+var testBeans : Beans = .init(name: "Speed Dial", roaster: "Brooklyn Coffee Company", roast: .medium, roastedOn: Date(), preground: false, advanced: advancedBeans)
+var advancedBeans : BeansAdvanced = .init(origin: "", process: .natural, altitude: .low, varietal: .arabica, notes: "")
+
+enum Roast: String, CaseIterable{
+    case light = "Light"
+    case medium = "Medium"
+    case dark = "Dark"
+}
+enum Process: String, CaseIterable{
+    case washed = "Washed (Wet)"
+    case natural = "Natural (Dry)"
+    case honey = "Honey"
+}
+enum Altitude: String, CaseIterable{
+    case high = "High (Above 1200m)"
+    case low = "Low (Below 800m)"
+}
+enum Varietal: String, CaseIterable{
+    case arabica = "Arabica"
+    case robusta = "Robusta"
+    case liberica = "Liberica"
+}
 
 struct EspressoShot: Identifiable {
     var id = UUID().uuidString
