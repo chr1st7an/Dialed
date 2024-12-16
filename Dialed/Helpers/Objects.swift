@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Foundation
-
+import SwiftData
 /// Sample Bean Model
 struct Beans: Identifiable {
     var id = UUID().uuidString
@@ -25,8 +25,62 @@ struct BeansAdvanced{
     var varietal: Varietal
     var notes: String
 }
-var testBeans : Beans = .init(name: "Speed Dial", roaster: "Brooklyn Coffee Company", roast: .medium, roastedOn: Date(), preground: false, advanced: advancedBeans)
+var testBeans : Beans = .init(name: "", roaster: "", roast: .medium, roastedOn: Date(), preground: false, advanced: advancedBeans)
 var advancedBeans : BeansAdvanced = .init(origin: "", process: .natural, altitude: .low, varietal: .arabica, notes: "")
+
+@Model
+class CoffeeBean {
+    @Attribute var id: UUID = UUID()  // Default value
+    @Attribute var name: String = ""  // Default value
+    @Attribute var roaster: String = ""  // Default value
+    @Attribute var roast: String = Roast.light.rawValue  // Default value
+    @Attribute var roastedOn: Date = Date()  // Default value
+    @Attribute var preground: Bool = false  // Default value
+    @Attribute var origin: String = ""  // Default value
+    @Attribute var process: String = Process.washed.rawValue  // Default value
+    @Attribute var altitude: String = Altitude.high.rawValue  // Default value
+    @Attribute var varietal: String = Varietal.arabica.rawValue  // Default value
+    @Attribute var notes: String = ""  // Default value
+
+    @Attribute var lastUpdated: Date = Date()  // Default value
+
+    init(bean: Beans) {
+        self.id = UUID(uuidString: bean.id) ?? UUID()
+        self.name = bean.name
+        self.roaster = bean.roaster
+        self.roast = bean.roast.rawValue
+        self.roastedOn = bean.roastedOn
+        self.preground = bean.preground
+        self.origin = bean.advanced.origin
+        self.process = bean.advanced.process.rawValue
+        self.altitude = bean.advanced.altitude.rawValue
+        self.varietal = bean.advanced.varietal.rawValue
+        self.notes = bean.advanced.notes
+        self.lastUpdated = Date()
+    }
+    func toBeans() -> Beans {
+        let advanced = BeansAdvanced(
+            origin: self.origin,
+            process: Process(rawValue: self.process) ?? .washed,
+            altitude: Altitude(rawValue: self.altitude) ?? .high,
+            varietal: Varietal(rawValue: self.varietal) ?? .arabica,
+            notes: self.notes
+        )
+        
+        return Beans(
+            id: self.id.uuidString,
+            name: self.name,
+            roaster: self.roaster,
+            roast: Roast(rawValue: self.roast) ?? .light,
+            roastedOn: self.roastedOn,
+            preground: self.preground,
+            advanced: advanced
+        )
+    }
+    
+}
+
+
 
 enum Roast: String, CaseIterable{
     case light = "Light"

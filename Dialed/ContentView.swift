@@ -19,6 +19,20 @@ struct ContentView: View {
     @State private var isDialingIn: Bool = false
     @State private var hideDialing: (Bool, Bool) = (false, false)
 
+    init() {
+        // Customize the appearance of the navigation bar
+        let appearance = UINavigationBarAppearance()
+        let appearance1 = UINavigationBarAppearance()
+        appearance1.configureWithTransparentBackground()
+        appearance1.backgroundColor = UIColor(Color.primaryBackground.opacity(0.5))
+        appearance1.shadowColor = UIColor(Color.primaryBackground.opacity(0.5))
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundColor = .clear
+        appearance.shadowColor = .clear  // Optional: removes the shadow line
+        UIBarButtonItem.appearance().tintColor = UIColor(Color.secondaryForeground)
+        UINavigationBar.appearance().standardAppearance = appearance1
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+    }
     
     var body: some View {
         NavigationStack(path: $navigation.stack){
@@ -46,6 +60,8 @@ struct ContentView: View {
                     BeansView()
                 case .newBeans:
                     AddBeansView()
+                        .environmentObject(navigation)
+
                     
                 }
             }

@@ -7,16 +7,19 @@
 
 import SwiftUI
 import AVFoundation
+import SwiftData
 
 struct HomeView: View {
     @EnvironmentObject var navigation : Navigation
+    @Environment(\.modelContext) private var context
+    @Query(sort: \CoffeeBean.lastUpdated, order: .reverse) private var allBeans: [CoffeeBean]
 
     @Binding var selectedBeans : Beans?
     @Binding var isDialingIn: Bool
     @State var animateDial: Bool = false
 
-    @State var mostRecentBean: Beans = testBeans
-    
+    @State var mostRecentBean: Beans = .init(name: "empty", roaster: "", roast: .dark, roastedOn: Date(), preground: true, advanced: advancedBeans)
+
     var body: some View {
         ZStack{
             if animateDial {
@@ -33,7 +36,14 @@ struct HomeView: View {
             }
             VStack{
                 Header()
-                Beans().padding(.vertical)
+                Beans()
+                    .padding(.vertical)
+                    .onAppear {
+                        // Update the most recent bean when the view appears
+                        if let mostRecent = allBeans.first {
+                            mostRecentBean = mostRecent.toBeans()
+                        }
+                    }
                 Spacer()
                 DialIn().safeAreaPadding(.bottom, 100)
             }.overlayPreferenceValue(MAnchorKey.self, { value in
@@ -72,17 +82,20 @@ struct HomeView: View {
     
     @ViewBuilder
     func Beans() -> some View {
-            VStack(alignment:.leading, spacing:5){
+        VStack(alignment:.leading, spacing:5){
+            
+            NavigationLink(value: Destination.beans){
+                
                 HStack{
                     Text("Beans").customFont(type: .bold, size: .subheader).foregroundStyle(.primaryText)
                     Image(systemName: "chevron.right").foregroundStyle(.secondaryForeground)
                 }
                 .padding(.horizontal)
-
+            }
                 HStack(spacing: 15) {
                     Color.clear
                         .frame(width: UIScreen.main.bounds.height * 0.04, height:UIScreen.main.bounds.height * 0.04)
-                        /// Source View Anchor
+                    /// Source View Anchor
                         .anchorPreference(key: MAnchorKey.self, value: .bounds, transform: { anchor in
                             return [mostRecentBean.id: anchor]
                         })
@@ -96,19 +109,18 @@ struct HomeView: View {
                             Text("Dark").customFont(type: .bold, size: .caption).foregroundStyle(.secondaryText)
                             Text("-").customFont(type: .light, size: .caption).foregroundStyle(.primaryText).padding(.horizontal, 5)
                             Text("roasted 12 days ago").customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
-
+                            
                             Spacer()
                         }
                     })
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    Text("x")
-                        .font(.caption)
-                        .foregroundStyle(.gray)
                 }
                 .contentShape(.rect)
                 .padding()
                 .background(RoundedRectangle(cornerRadius: 5).foregroundStyle(.primaryForeground)).padding(.horizontal)
+                .redacted(reason: mostRecentBean.name != "empty" ? [] : .placeholder)
+            
+                
 
                 
                 

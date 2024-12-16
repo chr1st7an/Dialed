@@ -9,14 +9,14 @@ import SwiftUI
 import CodeScanner
 import CarBode
 struct AddBeansView: View {
+    @EnvironmentObject var navigation: Navigation
+    @Environment(\.modelContext) private var context
     @State private var isPresentingScanner = false
     @State private var scannedCode: String?
     @State private var animateGradient = true
-    
     @State var bean : Beans = .init(name: "", roaster: "", roast: .medium, roastedOn: Date(), preground: false, advanced: advancedBeans)
-    
     @State var showAdvanced : Bool = false
-    
+    @State var loading : Bool = false
 
     var body: some View {
         ZStack{
@@ -113,16 +113,36 @@ struct AddBeansView: View {
 
                 HStack{
                     Spacer()
-                    Button{
-                        
-                    }label: {
-                        Text("Save")
-                            .customFont(type: .regular, size: .body)
-                            .foregroundStyle(.inverseText)
-                            .padding(.horizontal, 75)
-                            .padding(.vertical, 3)
-                            .background(.secondaryForeground)
-                            .clipShape(Capsule())
+                    if loading {
+                        ProgressView()
+                    }else{
+                        Button{
+                            withAnimation{
+                                loading = true
+                            }
+                            saveCoffeeBean(bean: CoffeeBean(bean: bean)) { result in
+                                switch result {
+                                case .success(_):
+                                    withAnimation{
+                                        loading = false
+                                        navigation.stack = [.beans]
+                                    }
+                                case .failure(_):
+                                    withAnimation{
+                                        loading = false
+                                        // show error message
+                                    }
+                                }
+                            }
+                        }label: {
+                            Text("Save")
+                                .customFont(type: .regular, size: .body)
+                                .foregroundStyle(.inverseText)
+                                .padding(.horizontal, 75)
+                                .padding(.vertical, 3)
+                                .background(.secondaryForeground)
+                                .clipShape(Capsule())
+                        }
                     }
                     Spacer()
                 }
@@ -169,7 +189,21 @@ struct AddBeansView: View {
                 }
 
         .navigationTitle("New Beans")
+        .navigationBarTitleDisplayMode(.large)
     }
+    
+    // Save function that returns Result<Bool, Error>
+       private func saveCoffeeBean(bean: CoffeeBean, completion: @escaping (Result<Bool, Error>) -> Void) {
+           context.insert(bean)
+           do {
+               try context.save()
+               completion(.success(true)) // Return success
+           } catch {
+               print("Error saving: \(error)") // Print the error
+               completion(.failure(error)) // Return failure with the error
+           }
+       }
+    
 }
 
 #Preview {
