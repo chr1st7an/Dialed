@@ -57,10 +57,7 @@ struct ContentView: View {
                 case .beans:
                     BeansView()
                 case .dialing:
-                    BeansView()
-                case .newBeans:
-                    AddBeansView()
-                        .environmentObject(navigation)
+                    BeansView()                    
 
                     
                 }

@@ -21,14 +21,14 @@ struct CurrentGrinderView: View{
     var body: some View{
         VStack{
             VStack{
-                    Image(grinder.type.rawValue)
+                Image(grinder.type.rawValue)
                         .resizable()
                         .frame(width: 70, height: 70)
                 Text(grinder.name).customFont(type: .regular, size: .subheader).multilineTextAlignment(.center)
             }
             .padding()
             .frame(minWidth: 100)
-            .background(.primaryForeground)
+            .background(.inverseText.opacity(0.5))
     //        .overlay(content: {
     //            RoundedRectangle(cornerRadius: 5).stroke(.primaryText, lineWidth: 3)
     //        })

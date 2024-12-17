@@ -8,7 +8,7 @@
 import SwiftUI
 import Foundation
 import SwiftData
-/// Sample Bean Model
+
 struct Beans: Identifiable {
     var id = UUID().uuidString
     var name: String
@@ -18,6 +18,7 @@ struct Beans: Identifiable {
     var preground: Bool
     var advanced: BeansAdvanced
 }
+
 struct BeansAdvanced{
     var origin: String
     var process: Process
@@ -25,6 +26,7 @@ struct BeansAdvanced{
     var varietal: Varietal
     var notes: String
 }
+
 var testBeans : Beans = .init(name: "", roaster: "", roast: .medium, roastedOn: Date(), preground: false, advanced: advancedBeans)
 var advancedBeans : BeansAdvanced = .init(origin: "", process: .natural, altitude: .low, varietal: .arabica, notes: "")
 

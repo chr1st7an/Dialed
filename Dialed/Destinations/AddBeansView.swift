@@ -11,6 +11,7 @@ import CarBode
 struct AddBeansView: View {
     @EnvironmentObject var navigation: Navigation
     @Environment(\.modelContext) private var context
+    @Binding var show : Bool
     @State private var isPresentingScanner = false
     @State private var scannedCode: String?
     @State private var animateGradient = true
@@ -20,12 +21,12 @@ struct AddBeansView: View {
 
     var body: some View {
         ZStack{
-            LinearGradient(colors: animateGradient ? [.primaryBackground, .primaryForeground] : [.primaryForeground, .primaryBackground], startPoint: .top, endPoint: animateGradient ? .bottom : . bottomTrailing).edgesIgnoringSafeArea(.all)
-                .onAppear {
-                                withAnimation(.easeInOut(duration: 10).repeatForever(autoreverses: true)) {
-                                    animateGradient.toggle()
-                                }
-                }.ignoresSafeArea()
+//            LinearGradient(colors: animateGradient ? [.primaryBackground, .primaryForeground] : [.primaryForeground, .primaryBackground], startPoint: .top, endPoint: animateGradient ? .bottom : . bottomTrailing).edgesIgnoringSafeArea(.all)
+//                .onAppear {
+//                                withAnimation(.easeInOut(duration: 10).repeatForever(autoreverses: true)) {
+//                                    animateGradient.toggle()
+//                                }
+//                }.ignoresSafeArea()
             Form {
                 Section{
                     TextField("Bean Name", text: $bean.name)
@@ -125,7 +126,7 @@ struct AddBeansView: View {
                                 case .success(_):
                                     withAnimation{
                                         loading = false
-                                        navigation.stack = [.beans]
+                                        show = false
                                     }
                                 case .failure(_):
                                     withAnimation{
@@ -149,6 +150,7 @@ struct AddBeansView: View {
                 .listRowBackground(Color.clear)
 
             }
+            .padding(.top, 50)
             .foregroundStyle(.primaryText)
             .tint(.primaryBackground)
             .scrollContentBackground(.hidden)
@@ -178,14 +180,7 @@ struct AddBeansView: View {
                             $0.draw(lineWidth: CGFloat(lineWidth), lineColor: lineColor, fillColor: fillColor)
                         }
                 }
-//                CodeScannerView(codeTypes: ) { response in
-//                            if case let .success(result) = response {
-//                                print("Found code: \(result.string)")
-//
-//                                scannedCode = result.string
-//                                isPresentingScanner = false
-//                            }
-//                        }
+
                 }
 
         .navigationTitle("New Beans")
@@ -208,6 +203,6 @@ struct AddBeansView: View {
 
 #Preview {
     NavigationView{
-        AddBeansView()
+        AddBeansView(show: .constant(true))
     }
 }

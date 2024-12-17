@@ -685,7 +685,7 @@ struct DialingView: View {
                     }
 
                 }
-            }.padding().background(.primaryForeground).clipShape(RoundedRectangle(cornerRadius: 5))
+            }.padding().background(.inverseText.opacity(0.5)).clipShape(RoundedRectangle(cornerRadius: 5))
             Button {
                 
             } label: {

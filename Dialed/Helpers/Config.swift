@@ -128,3 +128,20 @@ extension View {
             .padding(10)
     }
 }
+
+func daysAgo(from date: Date) -> String {
+    let calendar = Calendar.current
+    let currentDate = Date()
+    
+    if let days = calendar.dateComponents([.day], from: date, to: currentDate).day {
+        switch days {
+        case 0:
+            return "today"
+        case 1:
+            return "yesterday"
+        default:
+            return "\(days) days ago"
+        }
+    }
+    return "Invalid date"
+}

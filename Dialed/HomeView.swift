@@ -17,7 +17,7 @@ struct HomeView: View {
     @Binding var selectedBeans : Beans?
     @Binding var isDialingIn: Bool
     @State var animateDial: Bool = false
-
+    @State var newBeans = false
     @State var mostRecentBean: Beans = .init(name: "empty", roaster: "", roast: .dark, roastedOn: Date(), preground: true, advanced: advancedBeans)
 
     var body: some View {
@@ -72,7 +72,7 @@ struct HomeView: View {
             Button {
                 navigation.stack.append(.profile)
             } label: {
-                Image(systemName: "person.circle.fill").resizable().frame(width: UIScreen.main.bounds.height * 0.04, height: UIScreen.main.bounds.height * 0.04).foregroundStyle(.secondaryForeground)
+                Image(systemName: "gearshape.fill").resizable().frame(width: UIScreen.main.bounds.height * 0.04, height: UIScreen.main.bounds.height * 0.04).foregroundStyle(.secondaryForeground.gradient)
             }.padding([.trailing])
 
         }
@@ -106,9 +106,9 @@ struct HomeView: View {
                             Text(mostRecentBean.roaster).customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
                         }
                         HStack(spacing: 0){
-                            Text("Dark").customFont(type: .bold, size: .caption).foregroundStyle(.secondaryText)
+                            Text("Dark").customFont(type: .bold, size: .caption).foregroundStyle(.secondaryForeground)
                             Text("-").customFont(type: .light, size: .caption).foregroundStyle(.primaryText).padding(.horizontal, 5)
-                            Text("roasted 12 days ago").customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
+                            Text("roasted \(daysAgo(from: mostRecentBean.roastedOn))").customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
                             
                             Spacer()
                         }
@@ -117,23 +117,31 @@ struct HomeView: View {
                 }
                 .contentShape(.rect)
                 .padding()
-                .background(RoundedRectangle(cornerRadius: 5).foregroundStyle(.primaryForeground)).padding(.horizontal)
-                .redacted(reason: mostRecentBean.name != "empty" ? [] : .placeholder)
+                .background(RoundedRectangle(cornerRadius: 5).foregroundStyle(.inverseText.opacity(0.5))).padding(.horizontal)
+                .opacity(mostRecentBean.name != "empty" ? 1 : 0)
             
                 
 
                 
                 
-                NavigationLink(value: Destination.newBeans) {
-                        HStack(spacing:5){
+            Button{
+                newBeans = true
+            }label:{
+                HStack(spacing:5){
                             Image(systemName: "plus").foregroundStyle(.inverseText.gradient).frame(maxHeight: UIScreen.main.bounds.height * 0.04, alignment: .center)
-                            Text("add new").customFont(type: .light, size: .caption).foregroundStyle(.inverseText)
+                            Text("add new").customFont(type: .regular, size: .caption).foregroundStyle(.inverseText)
 
                         }.padding(.horizontal).background(RoundedRectangle(cornerRadius: 5).foregroundStyle(.secondaryForeground))
                     }
 
                 .padding(.horizontal)
             }
+        .sheet(isPresented: $newBeans, content: {
+            AddBeansView(show: $newBeans)
+                .presentationDetents([.medium, .large])
+                .presentationBackground(.thinMaterial)
+                .presentationCornerRadius(50)
+        })
         
 
     }
