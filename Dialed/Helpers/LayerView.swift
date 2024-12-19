@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LayerView: View {
-    var selectedBeans: Beans?
+    var selectedBeans: CoffeeBean?
     var hideView: (Bool, Bool)
     var value: [String: Anchor<CGRect>]
     var pushView: Bool
@@ -16,11 +16,12 @@ struct LayerView: View {
     @State private var sourceRect: CGRect = .zero
     var body: some View {
         GeometryReader(content: { geometry in
-            if let selectedBeans, let anchor = value[selectedBeans.id] {
+            if let selectedBeans, let anchor = value[selectedBeans.id.uuidString] {
                 let rect = pushView ? geometry[anchor] : sourceRect
                 
                 ImageView(bean: selectedBeans, size: rect.size)
-                    .frame(width: rect.size.width , height: rect.size.height)                    .offset(x: rect.minX, y: rect.minY)
+                    .frame(width: rect.size.width , height: rect.size.height)
+                    .offset(x: rect.minX, y: rect.minY)
                     /// Simply Animating the rect will add the geometry Effect we needed
                     .animation(.snappy(duration: 0.75, extraBounce: 0), value: rect)
                     .transition(.identity)
@@ -40,7 +41,7 @@ struct LayerView: View {
 }
 
 struct ImageView: View {
-    var bean: Beans
+    var bean: CoffeeBean
     var size: CGSize
     var body: some View {
 //        VStack{
@@ -77,7 +78,7 @@ struct PulsatingCirclesView: View {
             .onAppear {
                 animate.toggle()
             }
-            .animation(Animation.easeInOut(duration: 1).repeatForever(autoreverses: true), value: animate)
+            .animation(Animation.easeInOut(duration: 0.99).repeatForever(autoreverses: true), value: animate)
         }
     }
 }

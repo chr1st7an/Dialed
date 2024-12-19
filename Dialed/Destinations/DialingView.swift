@@ -7,16 +7,24 @@
 
 import SwiftUI
 import Sliders
+import SwiftData
 
 struct DialingView: View {
     @EnvironmentObject var navigation : Navigation
     @StateObject var dialingVm = DialingViewModel()
-    @Binding var selectedBeans: Beans?
+    @Environment(\.modelContext) private var context
+    @Query(sort: \CoffeeBean.name, order: .forward) var coffeeBeans: [CoffeeBean]
+    
+    @Binding var selectedBeans: CoffeeBean?
     @Binding var isDialing: Bool
     @Binding var hideView: (Bool, Bool)
     
     @State var start : Bool = false
     @State var animateGradient = false
+    @State var showShotPopover = false
+    @State var changeBeans = false
+    @State var showBeanDetail = false
+
 
     @State private var isBeanSettled = false
     @Namespace private var beanAnimation
@@ -104,7 +112,7 @@ struct DialingView: View {
                             .opacity(0)
                             .animation(.snappy, value: hideView.1)
                             .overlay(alignment: .bottom) {
-                                VStack(spacing: 20){
+                                VStack(spacing: 15){
                                     if dialingVm.step != .assessment{
                                         HStack(alignment: .center, spacing: 20){
                                             // step icons
@@ -149,21 +157,41 @@ struct DialingView: View {
                                                 .matchedGeometryEffect(id: tastingNotes, in: assesmentAnimation)
                                             
                                         }
-                                    }
-
-                                    if dialingVm.step != .assessment{
+                                        HStack(alignment: .center) {
+                                            // Loop through the shots in dialingVm.shots
+                                            ForEach(dialingVm.shots.indices, id: \.self) { index in
+                                                ShotNumberPopover(shot: dialingVm.shots[index], number: index)
+                                            }
+                                            Text("\(dialingVm.shots.count + 1)")
+                                                .customFont(type: .regular, size: .caption)
+                                                .foregroundStyle(.inverseText)
+                                            
+                                        }
                                         HStack(spacing:25){
                                                 Button {
                                                     withAnimation{
                                                         switch dialingVm.step {
                                                         case .dose:
                                                             /// Closing the View with animation
-                                                            hideView.0 = false
-                                                            hideView.1 = false
-                                                            isDialing = false
-                                                            /// Average Navigation Pop takes 0.35s that's the reason I set the animation duration as 0.35s, after the view is popped out, making selectedProfile to nil
-                                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
-                                                                self.selectedBeans = nil
+                                                            if dialingVm.shots.isEmpty {
+                                                                hideView.0 = false
+                                                                hideView.1 = false
+                                                                isDialing = false
+                                                                /// Average Navigation Pop takes 0.35s that's the reason I set the animation duration as 0.35s, after the view is popped out, making selectedProfile to nil
+                                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
+                                                                    self.selectedBeans = nil
+                                                                }
+                                                            }else{
+                                                                if let lastShot = dialingVm.shots.last {
+                                                                    // Set the current shot to the last added shot
+                                                                    dialingVm.currentShot = lastShot
+                                                                    
+                                                                    // Remove the last added shot from the shots array
+                                                                    dialingVm.shots.removeLast()
+                                                                    
+                                                                    // Update the step to the next stage
+                                                                    dialingVm.step = .assessment
+                                                                }
                                                             }
                                                         case .grind:
                                                             dialingVm.step = .dose
@@ -219,7 +247,7 @@ struct DialingView: View {
                             }
                         }
                         .anchorPreference(key: MAnchorKey.self, value: .bounds, transform: { anchor in
-                            return [selectedBeans.id: anchor]
+                            return [selectedBeans.id.uuidString: anchor]
                         })
                     })
                     .ignoresSafeArea()
@@ -235,7 +263,7 @@ struct DialingView: View {
                     }
                 })
             }
-        }.navigationBarBackButtonHidden(true)
+        }.navigationBarBackButtonHidden(true).navigationPopGestureDisabled(true)
     }
     
     // DOSE
@@ -246,10 +274,14 @@ struct DialingView: View {
         multiplier: 1
     )
     @ViewBuilder
-    func DoseInput(size: CGSize, bean: Beans) -> some View {
+    func DoseInput(size: CGSize, bean: CoffeeBean) -> some View {
         VStack{
             Text("Select Dose").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
-            collapsedBean(size: size, bean: bean)
+            if dialingVm.shots.isEmpty{
+                collapsedBean(size: size, bean: bean)
+            }else{
+                
+            }
             DosePicker().padding(.vertical)
             Spacer()
             
@@ -259,33 +291,41 @@ struct DialingView: View {
     // GRIND
     @FocusState private var isFocused: Bool // State to manage focus
     @ViewBuilder
-    func GrindInput(size: CGSize, bean: Beans) -> some View {
+    func GrindInput(size: CGSize, bean: CoffeeBean) -> some View {
         VStack{
             Text("Grind Settings").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
-            CurrentGrinderView(grinder: grinderTest)
-                .padding(.vertical)
-            HStack {
-                Image(systemName: "list.clipboard.fill").foregroundStyle(.inverseText.gradient)
-                ZStack{
-                    if dialingVm.currentShot.grind.notes.isEmpty{
-                        HStack{
-                            Text("enter specific machine setting").customFont(type: .regular, size: .body).foregroundStyle(.inverseText.opacity(0.4))
-                            Spacer()
-                        }
-                    }
-                    TextField("", text: $dialingVm.currentShot.grind.notes)
-                        .tint(.inverseText)
-                        .font(Font.custom("Parkinsans-Regular", fixedSize: 22))
-//                        .focused($isFocused) // Attach focus state to the TextField
-//                        .onAppear {
-//                            if dialingVm.currentShot.grind.notes.isEmpty{
-//                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-//                                        isFocused = true // Trigger the keyboard to show
-//                                }
-//                            }
-//                        }
+            VStack(alignment:.center, spacing:0){
+                HStack(spacing:0){
+                    Image(grinderTest.type)
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                    Text(grinderTest.name).customFont(type: .regular, size: .caption).multilineTextAlignment(.leading).foregroundStyle(.primaryText)
                 }
-            }.underlineTextField(color: .inverseText).padding(.top)
+                .padding(.horizontal).padding(.vertical, 2).background(Capsule().foregroundStyle(.primaryBackground)).padding()
+                HStack {
+                    Image(systemName: "list.clipboard.fill").foregroundStyle(.inverseText.gradient)
+                    ZStack{
+                        if dialingVm.currentShot.grind.notes.isEmpty{
+                            HStack{
+                                Text("enter specific machine setting").customFont(type: .regular, size: .body).foregroundStyle(.inverseText.opacity(0.4))
+                                Spacer()
+                            }
+                        }
+                        TextField("", text: $dialingVm.currentShot.grind.notes)
+                            .tint(.inverseText)
+                            .font(Font.custom("Parkinsans-Regular", fixedSize: 22))
+    //                        .focused($isFocused) // Attach focus state to the TextField
+    //                        .onAppear {
+    //                            if dialingVm.currentShot.grind.notes.isEmpty{
+    //                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+    //                                        isFocused = true // Trigger the keyboard to show
+    //                                }
+    //                            }
+    //                        }
+                    }
+                }.underlineTextField(color: .inverseText).padding()
+                
+            }.padding(.top)
             Spacer()
             
         }.safeAreaPadding(.top, 100)
@@ -296,10 +336,13 @@ struct DialingView: View {
     @State var finalizeExtraction : Bool = false
     @State private var timer: Timer? = nil
     private func startExtraction() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            
             timer?.invalidate() // Stop any existing timer
             timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                 dialingVm.currentShot.extractionTime += 1
             }
+        }
         }
     private func stopExtraction() {
             timer?.invalidate()
@@ -312,7 +355,7 @@ struct DialingView: View {
         multiplier: 1
     )
     @ViewBuilder
-    func TimeInput(size: CGSize, bean: Beans) -> some View {
+    func TimeInput(size: CGSize, bean: CoffeeBean) -> some View {
         VStack{
             Text("Record Extraction Time").customFont(type: .regular, size: .header).foregroundStyle(.inverseText).multilineTextAlignment(.center)
             VStack{
@@ -381,7 +424,7 @@ struct DialingView: View {
         multiplier: 1
     )
     @ViewBuilder
-    func YieldInput(size: CGSize, bean: Beans) -> some View {
+    func YieldInput(size: CGSize, bean: CoffeeBean) -> some View {
         VStack{
             Text("Extraction Yield").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
             YieldPicker().padding(.vertical)
@@ -392,7 +435,7 @@ struct DialingView: View {
     
     @State var hideTransition: Bool = false
     @ViewBuilder
-    func AssesmentView(size: CGSize, bean: Beans) -> some View {
+    func AssesmentView(size: CGSize, bean: CoffeeBean) -> some View {
         VStack{
 //            Text("Dialed?").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
             VStack{
@@ -427,7 +470,7 @@ struct DialingView: View {
                     }
                     Spacer()
                     HStack(spacing:0){
-                        Image(grinderTest.type.rawValue)
+                        Image(grinderTest.type)
                             .resizable()
                             .frame(width: 20, height: 20)
                         Text(grinderTest.name).customFont(type: .regular, size: .caption).multilineTextAlignment(.leading).foregroundStyle(.inverseText)
@@ -463,14 +506,30 @@ struct DialingView: View {
             Spacer()
             VStack{
                 Button {
-                    /// Closing the View with animation
-                    hideView.0 = false
-                    hideView.1 = false
-                    isDialing = false
-                    /// Average Navigation Pop takes 0.35s that's the reason I set the animation duration as 0.35s, after the view is popped out, making selectedProfile to nil
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
-                        self.selectedBeans = nil
-                    }
+                    dialingVm.currentShot.dialed = true
+                    dialingVm.shots.append(dialingVm.currentShot)
+                    
+                    let espressoShots = dialingVm.shots.map { shot -> EspressoShot in
+                            let espressoShot = EspressoShot(shot: shot)
+                            espressoShot.parentBean = bean
+                            return espressoShot
+                        }
+                    bean.shotHistory?.append(contentsOf: espressoShots)
+                    do {
+                        selectedBeans?.lastUpdated = Date()
+
+                            try context.save()  // Replace `context` with your actual managed object context if necessary
+                        /// Closing the View with animation
+                        hideView.0 = false
+                        hideView.1 = false
+                        isDialing = false
+                        /// Average Navigation Pop takes 0.35s that's the reason I set the animation duration as 0.35s, after the view is popped out, making selectedProfile to nil
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
+                            self.selectedBeans = nil
+                        }
+                        } catch {
+                            print("Error saving shots to bean: \(error)")
+                        }
                 }label: {
                     Text("Dialed In").customFont(type: .regular, size: .subheader).foregroundStyle(.primaryText).padding(.horizontal, 75).padding(.vertical, 3).background(.primaryBackground.gradient).clipShape(Capsule())
                 }
@@ -481,7 +540,7 @@ struct DialingView: View {
                     startTimer = false
                     finalizeExtraction = false
                     dialingVm.shots.append(dialingVm.currentShot)
-                    dialingVm.currentShot = espressoShotShell
+                    dialingVm.currentShot = .init(dose: 0, yield: 0, extractionTime: 0, metric: "", tastingNotes: .init(acidity: 0.5, bitterness: 0.5, crema: 0.5, satisfaction: 0.5), grind: .init(grinderId: "", notes: ""), pulledOn: Date(), dialed: false)
                     withAnimation {
                         dialingVm.step = .dose
                     }
@@ -493,7 +552,7 @@ struct DialingView: View {
     }
     
     @ViewBuilder
-    func TastingNotes(size: CGSize, bean: Beans) -> some View {
+    func TastingNotes(size: CGSize, bean: CoffeeBean) -> some View {
         VStack{
             Text("Tasting Notes").customFont(type: .regular, size: .header).foregroundStyle(.inverseText)
             VStack{
@@ -622,7 +681,7 @@ struct DialingView: View {
     }
     
     @ViewBuilder
-    func expandedBean(size: CGSize, bean: Beans) -> some View {
+    func expandedBean(size: CGSize, bean: CoffeeBean) -> some View {
         VStack{
             ImageView(bean: bean, size: size)
                 .matchedGeometryEffect(id: beanIcon, in: beanAnimation)
@@ -662,34 +721,99 @@ struct DialingView: View {
     }
     
     @ViewBuilder
-    func collapsedBean(size: CGSize, bean: Beans) -> some View {
+    func collapsedBean(size: CGSize, bean: CoffeeBean) -> some View {
         VStack{
-            HStack{
-                Image("beans")
-                    .resizable()
-                    .frame(width: 50, height: 50)
-                    .matchedGeometryEffect(id: beanIcon, in: beanAnimation)
-                if start{
-                    VStack(alignment:.leading){
-                        Text(bean.name)
-                            .customFont(type: .regular, size: .subheader)
-                            .foregroundStyle(.primaryText)
-                            .multilineTextAlignment(.center)
-                            .matchedGeometryEffect(id: beanName, in: beanAnimation)
+            Button{
+                showBeanDetail.toggle()
+            }label:{
+                HStack{
+                    Image("beans")
+                        .resizable()
+                        .frame(width: 50, height: 50)
+                        .matchedGeometryEffect(id: beanIcon, in: beanAnimation)
+                    if start{
+                        VStack(alignment:.leading){
+                            Text(bean.name)
+                                .customFont(type: .regular, size: .subheader)
+                                .foregroundStyle(.primaryText)
+                                .multilineTextAlignment(.center)
+                                .matchedGeometryEffect(id: beanName, in: beanAnimation)
 
-                        Text(bean.roaster)
-                            .customFont(type: .light, size: .body)
-                            .foregroundStyle(.primaryText)
-                            .multilineTextAlignment(.center)
-                            .matchedGeometryEffect(id: beanRoaster, in: beanAnimation)
+                            Text(bean.roaster)
+                                .customFont(type: .light, size: .body)
+                                .foregroundStyle(.primaryText)
+                                .multilineTextAlignment(.center)
+                                .matchedGeometryEffect(id: beanRoaster, in: beanAnimation)
+                        }
+
                     }
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.inverseText.opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 5))
+            }
+            .padding()
+            .sheet(isPresented: $showBeanDetail, content: {
+                NavigationView{
+                    BeanView(bean:bean, showDetails: $showBeanDetail)
+                }
+                    .presentationDetents([.height(UIScreen.main.bounds.height * 0.5), .height(UIScreen.main.bounds.height * 0.75)])
+                    .presentationBackground(.ultraThinMaterial)
+                    .presentationCornerRadius(50)
+            })
+            .buttonStyle(.borderless)
+            
+            Button {
+                changeBeans.toggle()
+            } label: {
+                Text("change beans").customFont(type: .regular, size: .caption).foregroundStyle(.primaryBackground)
+            }.sheet(isPresented: $changeBeans) {
+                VStack {
+                    List(coffeeBeans) { bean in
+                        Button{
+                            bean.lastUpdated = Date()
+                            withAnimation{
+                                selectedBeans = bean
+                            }
+                            changeBeans.toggle()
+                        }label:{
+                            HStack(spacing: 15) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    VStack(alignment: .leading) {
+                                        Text(bean.name)
+                                            .customFont(type: .regular, size: .body)
+                                            .foregroundStyle(.primaryText)
+                                        Text(bean.roaster)
+                                            .customFont(type: .regular, size: .caption)
+                                            .foregroundStyle(.primaryText)
+                                    }
+                                    HStack(spacing: 0) {
+                                        Text(bean.roast)
+                                            .customFont(type: .bold, size: .caption)
+                                            .foregroundStyle(.secondaryForeground)
+                                        Text("-")
+                                            .customFont(type: .light, size: .caption)
+                                            .foregroundStyle(.primaryText)
+                                            .padding(.horizontal, 5)
+                                        Text("roasted \(daysAgo(from: bean.roastedOn))").customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
+                                        
+                                        Spacer()
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                        .listRowBackground(Color.inverseText.opacity(0.5))
+                        .buttonStyle(.borderless)
+                        
+                    }
+                    .scrollContentBackground(.hidden)
 
                 }
-            }.padding().background(.inverseText.opacity(0.5)).clipShape(RoundedRectangle(cornerRadius: 5))
-            Button {
-                
-            } label: {
-                Text("dial in new beans").customFont(type: .regular, size: .caption).foregroundStyle(.primaryBackground)
+                .presentationDetents([.height(UIScreen.main.bounds.height * 0.4), .medium])
+                .presentationBackground(.ultraThinMaterial)
+                .presentationCornerRadius(50)
             }
 
         }
@@ -697,6 +821,37 @@ struct DialingView: View {
 
 }
 
+
+struct ShotNumberPopover : View {
+    @State var showShotPopover = false
+    var shot: Shot
+    var number: Int
+    var body: some View {
+
+        Button{
+            showShotPopover.toggle()
+        }label:{
+            Text("\(number + 1)") // Displaying the number, +1 to start from 1
+                .customFont(type: .regular, size: .small)
+                .padding(8)
+                .foregroundStyle(.primaryText)
+                .background(Circle().foregroundStyle(Color.primaryBackground)).opacity(0.5)
+        }
+        .iOSPopover(isPresented: $showShotPopover, arrowDirection: .any) {
+            VStack(alignment: .leading){
+                Text("Dose: \(String(format: "%.2f", shot.dose)) g").customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
+                if !shot.grind.notes.isEmpty {
+                    Text("Grind: \(shot.grind.notes)").customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
+                }
+                Text("Extraction: \(String(format: "%.2f", shot.extractionTime)) sec.")
+                    .customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
+                Text("Yield: \(String(format: "%.2f",shot.yield)) g").customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
+
+
+            }.padding()
+        }
+    }
+}
 
 
 #Preview {

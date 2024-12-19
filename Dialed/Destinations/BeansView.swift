@@ -7,6 +7,7 @@ struct BeansView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \CoffeeBean.name, order: .forward) var coffeeBeans: [CoffeeBean]
     @State private var animateGradient = true
+    @State var newBeans = false
 
     var body: some View {
         ZStack {
@@ -22,12 +23,18 @@ struct BeansView: View {
                     .contentShape(.rect)
                     // Add swipe actions here
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button {
+                            // Delete the bean from the context
+                        } label: {
+                            Label("Dial In", systemImage: "cup.and.heat.waves.fill")
+                        }
                         Button(role: .destructive) {
                             // Delete the bean from the context
                             deleteBean(bean)
                         } label: {
                             Label("Delete", systemImage: "trash")
-                        }
+                        }.tint(.red.opacity(0.5))
+                       
                     }
                     .listRowBackground(Color.inverseText.opacity(0.5))
 
@@ -37,14 +44,35 @@ struct BeansView: View {
                     .scrollContentBackground(.hidden)
             }
         }
+        .toolbar(content: {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button{
+                    newBeans = true
+                }label:{
+                    HStack(spacing:5){
+                        Image(systemName: "plus").resizable().frame(maxWidth:UIScreen.main.bounds.height * 0.01 ,maxHeight: UIScreen.main.bounds.height * 0.01, alignment: .center).foregroundStyle(.inverseText.gradient)
+                        Text("add new").customFont(type: .regular, size: .small).foregroundStyle(.inverseText)
+
+                    }.padding(.horizontal).padding(.vertical, 2).background(Capsule().foregroundStyle(.secondaryForeground))
+                        }
+
+            .sheet(isPresented: $newBeans, content: {
+    //            NavigationView{
+                    AddBeansView(show: $newBeans)
+                        .presentationDetents([.medium, .large])
+                        .presentationBackground(.thinMaterial)
+                        .presentationCornerRadius(50)
+    //            }
+            })
+            }
+        })
         .navigationTitle("My Beans")
         .navigationBarTitleDisplayMode(.large)
     }
 
     private func deleteBean(_ bean: CoffeeBean) {
         // Delete the bean from the context
-        context.delete(bean)
-        
+        context.delete(bean)        
         // Save the changes to the model context
         do {
             try context.save()
@@ -88,11 +116,14 @@ struct BeanRow: View {
         }
         .contentShape(.rect)
         .sheet(isPresented: $showDetails, content: {
-            BeanView(bean:bean, showDetails: $showDetails)
-                .presentationDetents([.height(UIScreen.main.bounds.height * 0.4), .medium])
+            NavigationView{
+                BeanView(bean:bean, showDetails: $showDetails)
+            }
+                .presentationDetents([.height(UIScreen.main.bounds.height * 0.5), .height(UIScreen.main.bounds.height * 0.75)])
                 .presentationBackground(.ultraThinMaterial)
                 .presentationCornerRadius(50)
         })
+        .buttonStyle(.borderless)
         // Add swipe actions here
     }
 }

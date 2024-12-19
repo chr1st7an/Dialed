@@ -15,7 +15,7 @@ struct AddBeansView: View {
     @State private var isPresentingScanner = false
     @State private var scannedCode: String?
     @State private var animateGradient = true
-    @State var bean : Beans = .init(name: "", roaster: "", roast: .medium, roastedOn: Date(), preground: false, advanced: advancedBeans)
+    @State var bean : Beans = .init(name: "", roaster: "", roast: .medium, roastedOn: Date(), preground: false, advanced: advancedBeans, shotHistory: [], lastUpdated: Date())
     @State var showAdvanced : Bool = false
     @State var loading : Bool = false
 
@@ -150,7 +150,8 @@ struct AddBeansView: View {
                 .listRowBackground(Color.clear)
 
             }
-            .padding(.top, 50)
+            .padding(.top, 25)
+            .foregroundStyle(.primaryText)
             .foregroundStyle(.primaryText)
             .tint(.primaryBackground)
             .scrollContentBackground(.hidden)

@@ -12,9 +12,9 @@ struct ContentView: View {
     @StateObject var navigation = Navigation()
 
     @State private var animateGradient = true
-    @State private var launch = false
+    @State private var launch = true
 
-    @State private var selectedBeans: Beans?
+    @State private var selectedBeans: CoffeeBean?
     
     @State private var isDialingIn: Bool = false
     @State private var hideDialing: (Bool, Bool) = (false, false)

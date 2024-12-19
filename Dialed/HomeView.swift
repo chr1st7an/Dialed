@@ -14,11 +14,12 @@ struct HomeView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \CoffeeBean.lastUpdated, order: .reverse) private var allBeans: [CoffeeBean]
 
-    @Binding var selectedBeans : Beans?
+    @Binding var selectedBeans : CoffeeBean?
     @Binding var isDialingIn: Bool
     @State var animateDial: Bool = false
+    @State var showBeanDetail: Bool = false
     @State var newBeans = false
-    @State var mostRecentBean: Beans = .init(name: "empty", roaster: "", roast: .dark, roastedOn: Date(), preground: true, advanced: advancedBeans)
+    @State var mostRecentBean: CoffeeBean = .init(bean: .init(name: "empty", roaster: "", roast: .dark, roastedOn: Date(), preground: true, advanced: advancedBeans, shotHistory: [], lastUpdated: Date()))
 
     var body: some View {
         ZStack{
@@ -41,7 +42,7 @@ struct HomeView: View {
                     .onAppear {
                         // Update the most recent bean when the view appears
                         if let mostRecent = allBeans.first {
-                            mostRecentBean = mostRecent.toBeans()
+                            mostRecentBean = mostRecent
                         }
                     }
                 Spacer()
@@ -50,7 +51,7 @@ struct HomeView: View {
                 GeometryReader(content: { geometry in
                         /// Fetching Each Profile Image View using the Profile ID
                         /// Hiding the Currently Tapped View
-                    if let anchor = value[mostRecentBean.id], selectedBeans?.id != mostRecentBean.id {
+                    if let anchor = value[mostRecentBean.id.uuidString], selectedBeans?.id.uuidString != mostRecentBean.id.uuidString {
                             let rect = geometry[anchor]
                         ImageView(bean: mostRecentBean, size: rect.size)
                                 .offset(x: rect.minX, y: rect.minY)
@@ -72,7 +73,7 @@ struct HomeView: View {
             Button {
                 navigation.stack.append(.profile)
             } label: {
-                Image(systemName: "gearshape.fill").resizable().frame(width: UIScreen.main.bounds.height * 0.04, height: UIScreen.main.bounds.height * 0.04).foregroundStyle(.secondaryForeground.gradient)
+                Image(systemName: "gearshape.fill").resizable().frame(width: UIScreen.main.bounds.height * 0.03, height: UIScreen.main.bounds.height * 0.03).foregroundStyle(.secondaryForeground)
             }.padding([.trailing])
 
         }
@@ -92,33 +93,44 @@ struct HomeView: View {
                 }
                 .padding(.horizontal)
             }
-                HStack(spacing: 15) {
-                    Color.clear
-                        .frame(width: UIScreen.main.bounds.height * 0.04, height:UIScreen.main.bounds.height * 0.04)
-                    /// Source View Anchor
-                        .anchorPreference(key: MAnchorKey.self, value: .bounds, transform: { anchor in
-                            return [mostRecentBean.id: anchor]
+            Button{
+                showBeanDetail.toggle()
+            }label:{
+                    HStack(spacing: 15) {
+                        Color.clear
+                            .frame(width: UIScreen.main.bounds.height * 0.04, height:UIScreen.main.bounds.height * 0.04)
+                        /// Source View Anchor
+                            .anchorPreference(key: MAnchorKey.self, value: .bounds, transform: { anchor in
+                                return [mostRecentBean.id.uuidString: anchor]
+                            })
+                        
+                        VStack(alignment: .leading, spacing: 2, content: {
+                            VStack(alignment:.leading){
+                                Text(mostRecentBean.name).customFont(type: .regular, size: .body).foregroundStyle(.primaryText)
+                                Text(mostRecentBean.roaster).customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
+                            }
+                            HStack(spacing: 0){
+                                Text("Dark").customFont(type: .bold, size: .caption).foregroundStyle(.secondaryForeground)
+                                Text("-").customFont(type: .light, size: .caption).foregroundStyle(.primaryText).padding(.horizontal, 5)
+                                Text("roasted \(daysAgo(from: mostRecentBean.roastedOn))").customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
+                                
+                                Spacer()
+                            }
                         })
-                    
-                    VStack(alignment: .leading, spacing: 2, content: {
-                        VStack(alignment:.leading){
-                            Text(mostRecentBean.name).customFont(type: .regular, size: .body).foregroundStyle(.primaryText)
-                            Text(mostRecentBean.roaster).customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
-                        }
-                        HStack(spacing: 0){
-                            Text("Dark").customFont(type: .bold, size: .caption).foregroundStyle(.secondaryForeground)
-                            Text("-").customFont(type: .light, size: .caption).foregroundStyle(.primaryText).padding(.horizontal, 5)
-                            Text("roasted \(daysAgo(from: mostRecentBean.roastedOn))").customFont(type: .regular, size: .caption).foregroundStyle(.primaryText)
-                            
-                            Spacer()
-                        }
-                    })
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .contentShape(.rect)
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 5).foregroundStyle(.inverseText.opacity(0.5))).padding(.horizontal)
                 }
-                .contentShape(.rect)
-                .padding()
-                .background(RoundedRectangle(cornerRadius: 5).foregroundStyle(.inverseText.opacity(0.5))).padding(.horizontal)
-                .opacity(mostRecentBean.name != "empty" ? 1 : 0)
+            .sheet(isPresented: $showBeanDetail, content: {
+                NavigationView{
+                    BeanView(bean:mostRecentBean, showDetails: $showBeanDetail)
+                }
+                    .presentationDetents([.height(UIScreen.main.bounds.height * 0.5), .height(UIScreen.main.bounds.height * 0.75)])
+                    .presentationBackground(.ultraThinMaterial)
+                    .presentationCornerRadius(50)
+            })
             
                 
 
@@ -128,19 +140,21 @@ struct HomeView: View {
                 newBeans = true
             }label:{
                 HStack(spacing:5){
-                            Image(systemName: "plus").foregroundStyle(.inverseText.gradient).frame(maxHeight: UIScreen.main.bounds.height * 0.04, alignment: .center)
-                            Text("add new").customFont(type: .regular, size: .caption).foregroundStyle(.inverseText)
+                    Image(systemName: "plus").resizable().frame(maxWidth:UIScreen.main.bounds.height * 0.01 ,maxHeight: UIScreen.main.bounds.height * 0.01, alignment: .center).foregroundStyle(.inverseText.gradient)
+                    Text("add new").customFont(type: .regular, size: .small).foregroundStyle(.inverseText)
 
-                        }.padding(.horizontal).background(RoundedRectangle(cornerRadius: 5).foregroundStyle(.secondaryForeground))
+                        }.padding(.horizontal).padding(.vertical, 2).background(Capsule().foregroundStyle(.secondaryForeground))
                     }
 
                 .padding(.horizontal)
             }
         .sheet(isPresented: $newBeans, content: {
-            AddBeansView(show: $newBeans)
-                .presentationDetents([.medium, .large])
-                .presentationBackground(.thinMaterial)
-                .presentationCornerRadius(50)
+//            NavigationView{
+                AddBeansView(show: $newBeans)
+                    .presentationDetents([.medium, .large])
+                    .presentationBackground(.thinMaterial)
+                    .presentationCornerRadius(50)
+//            }
         })
         
 
