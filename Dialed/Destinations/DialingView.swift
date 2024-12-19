@@ -280,7 +280,14 @@ struct DialingView: View {
             if dialingVm.shots.isEmpty{
                 collapsedBean(size: size, bean: bean)
             }else{
-                
+                HStack{
+                    if dialingVm.latestSuggestion.isEmpty {
+                        ProgressView()
+                    }else{
+                        Text(dialingVm.latestSuggestion).customFont(type: .regular, size: .small).multilineTextAlignment(.leading)
+                    }
+                }.padding().frame(maxWidth: .infinity)
+                    .modifier(animatedGradientBackground()).clipShape(RoundedRectangle(cornerRadius: 10)).padding()
             }
             DosePicker().padding(.vertical)
             Spacer()
@@ -541,6 +548,7 @@ struct DialingView: View {
                     finalizeExtraction = false
                     dialingVm.shots.append(dialingVm.currentShot)
                     dialingVm.currentShot = .init(dose: 0, yield: 0, extractionTime: 0, metric: "", tastingNotes: .init(acidity: 0.5, bitterness: 0.5, crema: 0.5, satisfaction: 0.5), grind: .init(grinderId: "", notes: ""), pulledOn: Date(), dialed: false)
+                    dialingVm.analyzeLastShot(beans: self.selectedBeans?.toBeans() ?? testBeans)
                     withAnimation {
                         dialingVm.step = .dose
                     }
@@ -753,7 +761,7 @@ struct DialingView: View {
                 .background(.inverseText.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 5))
             }
-            .padding()
+            .padding(.horizontal)
             .sheet(isPresented: $showBeanDetail, content: {
                 NavigationView{
                     BeanView(bean:bean, showDetails: $showBeanDetail)
@@ -853,6 +861,26 @@ struct ShotNumberPopover : View {
     }
 }
 
+struct animatedGradientBackground: ViewModifier {
+    @State private var animate: Bool = false
+
+    func body(content: Content) -> some View {
+        ZStack {
+            LinearGradient(
+                colors: animate ? [.primaryBackground, .primaryForeground] : [.primaryForeground, .primaryBackground],
+                startPoint: .topLeading,
+                endPoint: animate ? .bottom : .bottomTrailing
+            )
+            .edgesIgnoringSafeArea(.all)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
+                    animate.toggle()
+                }
+            }
+            content
+        }
+    }
+}
 
 #Preview {
     ContentView()
